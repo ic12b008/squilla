@@ -54,6 +54,10 @@ public class BufferedPipe {
     public void setBlockingRead(boolean b) {
         this.bBlockingRead = b;
     }
+    
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
 
     public int getMaximum() {
         return bufferSize - 1;
@@ -178,7 +182,7 @@ public class BufferedPipe {
         private boolean waitIncoming(int length) throws InterruptedException {
             synchronized (pipeLock) {
                 incoming = length;
-                wait(timeout);
+                pipeLock.wait(timeout);
                 if (incoming <= available()) {
                     return true;
                 }
@@ -239,7 +243,7 @@ public class BufferedPipe {
         private void notifyIncoming() {
             synchronized (pipeLock) {
                 if (incoming <= bufferAvailable()) {
-                    notify();
+                    pipeLock.notify();
                 }
             }
         }
