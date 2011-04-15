@@ -37,7 +37,18 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>org.squilla.Activator</Bundle-Activator>
+                        <Export-Package>org.squilla,org.squilla.io,org.squilla.service,org.squilla.util</Export-Package>
+                        <Private-Package>org.squilla.*</Private-Package>
                     </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.4</source>
+                    <target>1.4</target>
                 </configuration>
             </plugin>
         </plugins>
