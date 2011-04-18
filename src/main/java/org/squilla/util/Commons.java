@@ -96,7 +96,7 @@ public abstract class Commons {
     public static long toLongLE(byte[] src, int off) {
         long dest = 0;
         for (int p = 0; p < INT_64_SIZE; p++) {
-            int d = src[off + p] & 0xff;
+            long d = src[off + p] & 0xff;
             dest |= (d << (BYTE_SIZE * p));
         }
         return dest;
@@ -105,7 +105,7 @@ public abstract class Commons {
     public static long toLongBE(byte[] src, int off) {
         long dest = 0;
         for (int p = 0; p < INT_64_SIZE; p++) {
-            int d = src[off + p] & 0xff;
+            long d = src[off + p] & 0xff;
             dest |= (d << (BYTE_SIZE * (INT_64_SIZE - 1 - p)));
         }
         return dest;
