@@ -28,4 +28,6 @@ public interface Processor {
     public void addListener(ProcessListener listener);
 
     public boolean activate();
+    
+    public boolean shutdown();
 }

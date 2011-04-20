@@ -28,8 +28,9 @@ import org.squilla.util.FifoQueue;
  */
 public abstract class AbstractProcessor implements Processor {
 
+    private static final Object SHUTDOWN = new Object();
     private FifoQueue queue;
-    private Thread processThread = null;
+    private ServiceThread processThread = null;
     private List listenerList;
     private boolean nonBlockingFire;
 
@@ -46,13 +47,27 @@ public abstract class AbstractProcessor implements Processor {
         listenerList.add(listener);
     }
 
-    public boolean activate() {
+    public synchronized boolean activate() {
         if (processThread != null) {
             return false;
         }
 
         processThread = new ProcessThread();
-        processThread.start();
+        processThread.activate();
+        return true;
+    }
+    
+    public synchronized boolean shutdown() {
+        if (processThread == null) {
+            return true;
+        }
+        processThread.shutdown();
+        queue.enqueue(SHUTDOWN);
+        if (!processThread.waitForShutdown(0)) {
+            throw new IllegalThreadStateException("Can't shutdown");
+        }
+        queue.drainAll();
+        processThread = null;
         return true;
     }
 
@@ -104,17 +119,18 @@ public abstract class AbstractProcessor implements Processor {
         this.nonBlockingFire = nonBlockingFire;
     }
 
-    private class ProcessThread extends Thread {
+    private class ProcessThread extends ServiceThread {
 
-        public void run() {
-            while (true) {
-                Object o = queue.blockingDequeue();
-                try {
-                    Object result = processNext(o);
-                    fireDone(o, result, isNonBlockingFire());
-                } catch (Exception ex) {
-                    fireFailed(o, ex, isNonBlockingFire());
-                }
+        public void taskLoop() {
+            Object o = queue.blockingDequeue();
+            if (o == SHUTDOWN) {
+                return;
+            }
+            try {
+                Object result = processNext(o);
+                fireDone(o, result, isNonBlockingFire());
+            } catch (Exception ex) {
+                fireFailed(o, ex, isNonBlockingFire());
             }
         }
     }

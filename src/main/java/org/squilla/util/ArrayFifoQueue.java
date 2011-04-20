@@ -32,7 +32,7 @@ public class ArrayFifoQueue implements FifoQueue {
         data = new Object[maxSize];
     }
     
-    public synchronized int getSize() {
+    public synchronized int size() {
         return size;
     }
     
@@ -58,10 +58,10 @@ public class ArrayFifoQueue implements FifoQueue {
             throw new NullPointerException();
         }
         data[size++] = e;
-        notify();
+        notifyAll();
         return true;
     }
-
+    
     public synchronized Object dequeue() {
         if (isEmpty()) {
             return null;
@@ -95,7 +95,12 @@ public class ArrayFifoQueue implements FifoQueue {
         return data[size];
     }
 
-    public int getElementCount() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Object[] drainAll() {
+        Object[] objs = new Object[size];
+        for (int i = 0; i < objs.length; i++) {
+            size--;
+            objs[i] = data[size];
+        }
+        return objs;
     }
 }

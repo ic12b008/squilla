@@ -22,7 +22,7 @@ package org.squilla.util;
  */
 public interface FifoQueue {
 
-    public int getElementCount();
+    public int size();
 
     public boolean isEmpty();
 
@@ -37,4 +37,6 @@ public interface FifoQueue {
     public Object blockingDequeue();
 
     public Object blockingDequeue(int i);
+    
+    public Object[] drainAll();
 }

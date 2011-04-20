@@ -4,7 +4,7 @@
 
     <groupId>org.squilla</groupId>
     <artifactId>squilla-commons</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <packaging>bundle</packaging>
 
     <name>squilla-commons OSGi Bundle</name>
