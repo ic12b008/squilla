@@ -1,11 +1,11 @@
 /*
- * Copyright 2010 Shotaro Uchida <fantom@xmaker.mx>
+ * Copyright 2011 Shotaro Uchida <fantom@xmaker.mx>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,23 +16,16 @@
 package org.squilla.util;
 
 /**
- * Simple First-In First-Out Queue.
  *
  * @author Shotaro Uchida <fantom@xmaker.mx>
  */
-public interface FifoQueue {
-
-    public int size();
-
-    public boolean isEmpty();
-
-    public boolean isFull();
-
-    public boolean enqueue(Object e);
-
-    public Object dequeue();
+public interface BlockingFifoQueue extends FifoQueue {
     
-    public Object peek();
+    public boolean blockingEnqueue(Object e);
     
-    public Object[] drainAll();
+    public boolean blockingEnqueue(Object e, int timeout);
+
+    public Object blockingDequeue();
+
+    public Object blockingDequeue(int timeout);
 }

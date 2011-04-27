@@ -20,14 +20,16 @@ package org.squilla.util;
  * 
  * @author Shotaro Uchida <fantom@xmaker.mx>
  */
-public class ArrayFifoQueue implements FifoQueue {
+public class ArrayFifoQueue implements BlockingFifoQueue {
 
-    private int capacity;
+    private int maxElement;
+    private int head;
+    private int tail;
     private int size;
     private Object[] data;
     
     public ArrayFifoQueue(int maxSize) {
-        capacity = maxSize;
+        maxElement = maxSize;
         size = 0;
         data = new Object[maxSize];
     }
@@ -44,10 +46,16 @@ public class ArrayFifoQueue implements FifoQueue {
     }
     
     public synchronized boolean isFull() {
-        if (size < capacity) {
+        if (size < maxElement) {
             return false;
         }
         return true;
+    }
+    
+    protected void enqueueInternal(Object e) {
+        data[tail] = e;
+        tail = (tail + 1) % maxElement;
+        size++;
     }
     
     public synchronized boolean enqueue(Object e) {
@@ -57,24 +65,52 @@ public class ArrayFifoQueue implements FifoQueue {
         if (e == null) {
             throw new NullPointerException();
         }
-        data[size++] = e;
+        enqueueInternal(e);
         notifyAll();
         return true;
+    }
+    
+    protected Object dequeueInternal() {
+        Object e = data[head];
+        data[head] = null;
+        head = (head + 1) % maxElement;
+        size--;
+        return e;
     }
     
     public synchronized Object dequeue() {
         if (isEmpty()) {
             return null;
         }
-        size--;
-        return data[size];
+        Object e = dequeueInternal();
+        notifyAll();
+        return e;
     }
     
-    public synchronized Object peek() {
-        if (isEmpty()) {
+    public Object peek() {
+        if (size == 0) {
             return null;
         }
-        return data[size - 1];
+        return data[head];
+    }
+    
+    public synchronized boolean blockingEnqueue(Object e) {
+        return blockingEnqueue(e, 0);
+    }
+    
+    public synchronized boolean blockingEnqueue(Object e, int timeout) {
+        while (isFull()) {
+            try {
+                wait(timeout);
+            } catch (InterruptedException ex) {
+            }
+            if (timeout != 0 && isFull()) {
+                return false;
+            }
+        }
+        enqueueInternal(e);
+        notifyAll();
+        return true;
     }
 
     public synchronized Object blockingDequeue() {
@@ -91,15 +127,16 @@ public class ArrayFifoQueue implements FifoQueue {
                 return null;
             }
         }
-        size--;
-        return data[size];
+        Object e = dequeueInternal();
+        notifyAll();
+        return e;
     }
 
-    public Object[] drainAll() {
+    public synchronized Object[] drainAll() {
         Object[] objs = new Object[size];
-        for (int i = 0; i < objs.length; i++) {
-            size--;
-            objs[i] = data[size];
+        int i = 0;
+        while (!isEmpty()) {
+            objs[i++] = dequeueInternal();
         }
         return objs;
     }

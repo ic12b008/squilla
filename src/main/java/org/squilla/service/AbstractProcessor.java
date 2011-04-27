@@ -20,7 +20,7 @@ package org.squilla.service;
 import java.util.List;
 import java.util.Vector;
 import org.squilla.util.ArrayFifoQueue;
-import org.squilla.util.FifoQueue;
+import org.squilla.util.BlockingFifoQueue;
 
 /**
  *
@@ -29,7 +29,7 @@ import org.squilla.util.FifoQueue;
 public abstract class AbstractProcessor implements Processor {
 
     private static final Object SHUTDOWN = new Object();
-    private FifoQueue queue;
+    private BlockingFifoQueue queue;
     private ServiceThread processThread = null;
     private List listenerList;
     private boolean nonBlockingFire;
@@ -40,7 +40,7 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     public void process(Object o) {
-        queue.enqueue(o);
+        queue.blockingEnqueue(o);
     }
 
     public void addListener(ProcessListener listener) {
@@ -62,7 +62,7 @@ public abstract class AbstractProcessor implements Processor {
             return true;
         }
         processThread.shutdown();
-        queue.enqueue(SHUTDOWN);
+        queue.blockingEnqueue(SHUTDOWN);
         if (!processThread.waitForShutdown(0)) {
             throw new IllegalThreadStateException("Can't shutdown");
         }

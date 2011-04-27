@@ -21,13 +21,10 @@ package org.squilla.service;
  *
  * @author Shotaro Uchida <fantom@xmaker.mx>
  */
-public interface Processor {
+public interface Processor extends Service {
 
     public void process(Object o);
 
     public void addListener(ProcessListener listener);
 
-    public boolean activate();
-    
-    public boolean shutdown();
 }

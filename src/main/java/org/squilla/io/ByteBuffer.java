@@ -41,6 +41,14 @@ public class ByteBuffer extends Buffer {
     public byte[] getRawArray() {
         return buffer;
     }
+    
+    public void extend(int newSize) {
+        byte[] newArray = new byte[newSize];
+        System.arraycopy(buffer, offset, newArray, 0, getCapacity());
+        offset = 0;
+        buffer = newArray;
+        
+    }
 
     public void put(byte src) {
         buffer[offset + getPosition()] = src;

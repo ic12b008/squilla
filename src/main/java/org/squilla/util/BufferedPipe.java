@@ -15,6 +15,7 @@
  */
 package org.squilla.util;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -35,6 +36,7 @@ public class BufferedPipe {
     private final Object pipeLock;
     private final PipeInputStream pis;
     private final PipeOutputStream pos;
+    private boolean shutdown = false;
 
     public BufferedPipe(int bufferSize) {
         this.bufferSize = bufferSize;
@@ -74,6 +76,13 @@ public class BufferedPipe {
             return ((head + 1) % bufferSize) == tail;
         }
     }
+    
+    public void shutdown(boolean shutdown) {
+        synchronized (pipeLock) {
+            this.shutdown = shutdown;
+            pipeLock.notifyAll();
+        }
+    }
 
     protected int bufferAvailable() {
         if (isEmpty()) {
@@ -105,15 +114,11 @@ public class BufferedPipe {
 
         public int read() {
             if (isEmpty()) {
-                if (bBlockingRead) {
-                    try {
-                        if (!waitIncoming(1)) {
-                            return 0;
-                        }
-                    } catch (InterruptedException ex) {
+                waitMinIncoming();
+                synchronized (pipeLock) {
+                    if (shutdown) {
+                        return -1;
                     }
-                } else {
-                    return 0;
                 }
             }
 
@@ -122,7 +127,7 @@ public class BufferedPipe {
                 b = buffer[tail];
                 tail = (tail + 1) % bufferSize;
             }
-            return b;
+            return b & 0xFF;
         }
 
         public int read(byte[] b) {
@@ -135,12 +140,14 @@ public class BufferedPipe {
             }
 
             if (length > available()) {
+                synchronized (pipeLock) {
+                    if (shutdown) {
+                        return -1;
+                    }
+                }
                 if (bBlockingRead) {
-                    try {
-                        if (!waitIncoming(length)) {
-                            return 0;
-                        }
-                    } catch (InterruptedException ex) {
+                    if (!waitIncoming(length)) {
+                        return 0;
                     }
                 } else {
                     length = available();
@@ -178,11 +185,26 @@ public class BufferedPipe {
                 return n;
             }
         }
+        
+        private void waitMinIncoming() {
+            synchronized (pipeLock) {
+                incoming = 1;
+                while (available() == 0 && !shutdown) {
+                    try {
+                        pipeLock.wait();
+                    } catch (InterruptedException ex) {
+                    }
+                }
+            }
+        }
 
-        private boolean waitIncoming(int length) throws InterruptedException {
+        private boolean waitIncoming(int length) {
             synchronized (pipeLock) {
                 incoming = length;
-                pipeLock.wait(timeout);
+                try {
+                    pipeLock.wait(timeout);
+                } catch (InterruptedException ex) {
+                }
                 if (incoming <= available()) {
                     return true;
                 }
@@ -193,7 +215,8 @@ public class BufferedPipe {
 
     private class PipeOutputStream extends OutputStream {
 
-        public void write(int b) {
+        public void write(int b) throws IOException {
+            checkIsShutdownRequested();
             if (!isFull()) {
                 synchronized (pipeLock) {
                     buffer[head] = (byte) (b & 0xFF);
@@ -205,11 +228,12 @@ public class BufferedPipe {
             }
         }
 
-        public void write(byte[] b) {
+        public void write(byte[] b) throws IOException {
             write(b, 0, b.length);
         }
 
-        public void write(byte[] b, int off, int length) {
+        public void write(byte[] b, int off, int length) throws IOException {
+            checkIsShutdownRequested();
             int space = getMaximum() - bufferAvailable();
             if (length > space) {
                 length = space;
@@ -236,6 +260,19 @@ public class BufferedPipe {
                         notifyIncoming();
                         break;
                     }
+                }
+            }
+        }
+        
+        public void flush() throws IOException {
+            checkIsShutdownRequested();
+            // TODO
+        }
+        
+        private void checkIsShutdownRequested() throws IOException {
+            synchronized (pipeLock) {
+                if (shutdown) {
+                    throw new IOException("Shutdown requested!");
                 }
             }
         }
