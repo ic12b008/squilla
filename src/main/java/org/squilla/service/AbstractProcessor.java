@@ -17,8 +17,8 @@
 
 package org.squilla.service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import org.squilla.util.ArrayFifoQueue;
 import org.squilla.util.BlockingFifoQueue;
 
@@ -36,7 +36,7 @@ public abstract class AbstractProcessor implements Processor {
 
     public AbstractProcessor(int queueSize) {
         queue = new ArrayFifoQueue(queueSize);
-        listenerList = new Vector();
+        listenerList = new ArrayList();
     }
 
     public void process(Object o) {

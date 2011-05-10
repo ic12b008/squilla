@@ -15,7 +15,7 @@
  */
 package org.squilla.io;
 
-import org.squilla.util.Commons;
+import org.squilla.util.ByteUtil;
 
 /**
  *
@@ -113,15 +113,19 @@ public class FrameBuffer extends ByteBuffer {
     }
     
     public void putInt64(long l) {
-        throw new UnsupportedOperationException();
+        if (byteOrder == BO_LITTLE_ENDIAN) {
+            put(ByteUtil.LITTLE_ENDIAN.toByteArray(l));
+        } else {
+            put(ByteUtil.BIG_ENDIAN.toByteArray(l));
+        }
     }
 
     public long getInt64() {
-        byte[] b = getBytes(Commons.INT_64_SIZE);
+        byte[] b = getBytes(ByteUtil.INT_64_SIZE);
         if (byteOrder == BO_LITTLE_ENDIAN) {
-            return Commons.toLongLE(b, 0);
+            return ByteUtil.LITTLE_ENDIAN.toInt64(b, 0);
         } else {
-            return Commons.toLongBE(b, 0);
+            return ByteUtil.BIG_ENDIAN.toInt64(b, 0);
         }
     }
 
