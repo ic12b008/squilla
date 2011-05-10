@@ -167,14 +167,14 @@ public class ByteUtil {
     }
     
     public byte[] toByteArray(long src) {
-        byte[] dest = new byte[Commons.INT_64_SIZE];
+        byte[] dest = new byte[INT_64_SIZE];
         if (byteOrder == BO_LE) {
-            for (int p = 0; p < Commons.INT_64_SIZE; p++) {
+            for (int p = 0; p < INT_64_SIZE; p++) {
                 dest[p] = (byte) ((src >> (BYTE_SIZE * p)) & 0xff);
             }
         } else {
-            for (int p = 0; p < Commons.INT_64_SIZE; p++) {
-                dest[p] = (byte) ((src >> (BYTE_SIZE * (Commons.INT_64_SIZE - 1 - p))) & 0xff);
+            for (int p = 0; p < INT_64_SIZE; p++) {
+                dest[p] = (byte) ((src >> (BYTE_SIZE * (INT_64_SIZE - 1 - p))) & 0xff);
             } 
         }
         return dest;

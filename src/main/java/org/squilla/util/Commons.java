@@ -24,12 +24,6 @@ import org.squilla.io.FrameBuffer;
  */
 public abstract class Commons {
 
-    public static final int INT_64_SIZE = 8;
-    public static final int INT_32_SIZE = 4;
-    public static final int INT_16_SIZE = 2;
-    public static final int INT_8_SIZE = 1;
-    public static final int BYTE_SIZE = 8;
-    
     public static int countBit(int i) {
         i = i - ((i >> 1) & 0x55555555);
         i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
