@@ -20,19 +20,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- *
+ * 
  * @author Shotaro Uchida <fantom@xmaker.mx>
  */
 public class BufferedPipe {
 
     private static final int DEFAULT_TIMEOUT = 100;
-    private byte[] buffer;
-    private int bufferSize;
+    private final byte[] buffer;
+    private final int bufferSize;
     private int head;
     private int tail;
     private int timeout;
-    private int incoming;
-    private boolean bBlockingRead = true;
     private final Object pipeLock;
     private final PipeInputStream pis;
     private final PipeOutputStream pos;
@@ -48,21 +46,9 @@ public class BufferedPipe {
         pis = new PipeInputStream();
         pos = new PipeOutputStream();
     }
-
-    public boolean isBlockingRead() {
-        return bBlockingRead;
-    }
-
-    public void setBlockingRead(boolean b) {
-        this.bBlockingRead = b;
-    }
     
     public void setTimeout(int timeout) {
         this.timeout = timeout;
-    }
-
-    public int getMaximum() {
-        return bufferSize - 1;
     }
 
     public boolean isEmpty() {
@@ -77,10 +63,20 @@ public class BufferedPipe {
         }
     }
     
-    public void shutdown(boolean shutdown) {
+    public void shutdown(boolean shutdown, boolean clearBuffer) {
         synchronized (pipeLock) {
+            if (clearBuffer) {
+                head = 0;
+                tail = 0;
+            }
             this.shutdown = shutdown;
             pipeLock.notifyAll();
+        }
+    }
+    
+    public boolean isShutdown() {
+        synchronized (pipeLock) {
+            return shutdown;
         }
     }
 
@@ -97,6 +93,10 @@ public class BufferedPipe {
             }
         }
     }
+    
+    public int bufferLeft() {
+        return bufferSize - bufferAvailable();
+    }
 
     public InputStream getInputStream() {
         return pis;
@@ -105,20 +105,29 @@ public class BufferedPipe {
     public OutputStream getOutputStream() {
         return pos;
     }
-
+    
     private class PipeInputStream extends InputStream {
 
+        private int awaitingSize = 0;
+        
         public int available() {
             return bufferAvailable();
         }
 
+        /**
+         * Single read, always block while empty.
+         * @return
+         * @throws IOException 
+         */
         public int read() {
             if (isEmpty()) {
+                if (isShutdown()) {
+                    return -1;
+                }
                 waitMinIncoming();
-                synchronized (pipeLock) {
-                    if (shutdown) {
-                        return -1;
-                    }
+                // Shutdown and still buffer is empty.
+                if (isShutdown() && isEmpty()) {
+                    return -1;
                 }
             }
 
@@ -131,27 +140,33 @@ public class BufferedPipe {
         }
 
         public int read(byte[] b) {
-            return read(b, 0, available());
+            return read(b, 0, b.length);
         }
 
         public int read(byte[] b, int off, int length) {
+            if (b == null) {
+                throw new NullPointerException("Null array");
+            }
             if (length > (b.length - off)) {
                 throw new IndexOutOfBoundsException();
             }
 
-            if (length > available()) {
-                synchronized (pipeLock) {
-                    if (shutdown) {
-                        return -1;
-                    }
+            if (length != 0 && length > available()) {
+                if (isEmpty() && isShutdown()) {
+                    return -1;
                 }
-                if (bBlockingRead) {
-                    if (!waitIncoming(length)) {
-                        return 0;
-                    }
-                } else {
-                    length = available();
+                waitIncoming(length);
+                int available = available();
+                if (available < length) {
+                    length = available;
                 }
+            }
+            
+            if (length == 0) {
+                if (isShutdown()) {
+                    return -1;
+                }
+                return 0;
             }
 
             synchronized (pipeLock) {
@@ -188,7 +203,7 @@ public class BufferedPipe {
         
         private void waitMinIncoming() {
             synchronized (pipeLock) {
-                incoming = 1;
+                awaitingSize = 1;
                 while (available() == 0 && !shutdown) {
                     try {
                         pipeLock.wait();
@@ -198,17 +213,21 @@ public class BufferedPipe {
             }
         }
 
-        private boolean waitIncoming(int length) {
+        private void waitIncoming(int length) {
             synchronized (pipeLock) {
-                incoming = length;
+                awaitingSize = length;
                 try {
                     pipeLock.wait(timeout);
                 } catch (InterruptedException ex) {
                 }
-                if (incoming <= available()) {
-                    return true;
+            }
+        }
+        
+        private void notifyIncoming(boolean forceRead) {
+            synchronized (pipeLock) {
+                if (awaitingSize <= bufferAvailable() || forceRead) {
+                    pipeLock.notifyAll();
                 }
-                return false;
             }
         }
     }
@@ -221,9 +240,7 @@ public class BufferedPipe {
                 synchronized (pipeLock) {
                     buffer[head] = (byte) (b & 0xFF);
                     head = (head + 1) % bufferSize;
-                    if (bBlockingRead) {
-                        notifyIncoming();
-                    }
+                    pis.notifyIncoming(false);
                 }
             }
         }
@@ -234,15 +251,15 @@ public class BufferedPipe {
 
         public void write(byte[] b, int off, int length) throws IOException {
             checkIsShutdownRequested();
-            int space = getMaximum() - bufferAvailable();
+            int space = bufferLeft();
             if (length > space) {
-                length = space;
+                throw new IOException("No more space left");
             }
 
             int woff = 0;
             int slot = length;
-            while (!isFull()) {
-                synchronized (pipeLock) {
+            synchronized (pipeLock) {
+                while (!isFull()) {
                     int count;
                     if (head >= tail) {
                         count = bufferSize - head;
@@ -256,8 +273,8 @@ public class BufferedPipe {
                     head = (head + slot) % bufferSize;
                     woff += slot;
                     slot = length - slot;
-                    if ((woff == length) && bBlockingRead) {
-                        notifyIncoming();
+                    if (woff == length) {
+                        pis.notifyIncoming(false);
                         break;
                     }
                 }
@@ -266,22 +283,14 @@ public class BufferedPipe {
         
         public void flush() throws IOException {
             checkIsShutdownRequested();
-            // TODO
+            if (!isEmpty()) {
+                pis.notifyIncoming(true);
+            }
         }
         
         private void checkIsShutdownRequested() throws IOException {
-            synchronized (pipeLock) {
-                if (shutdown) {
-                    throw new IOException("Shutdown requested!");
-                }
-            }
-        }
-
-        private void notifyIncoming() {
-            synchronized (pipeLock) {
-                if (incoming <= bufferAvailable()) {
-                    pipeLock.notify();
-                }
+            if (isShutdown()) {
+                throw new IOException("Shutdown requested!");
             }
         }
     }

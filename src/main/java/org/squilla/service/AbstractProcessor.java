@@ -71,7 +71,11 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
-    public abstract Object processNext(Object o) throws Exception;
+    protected abstract Object processNext(Object o) throws Exception;
+    
+    protected BlockingFifoQueue getRawQueue() {
+        return queue;
+    }
 
     private void fireDone(final Object o, final Object result, boolean block) {
         for (int i = 0; i < listenerList.size(); i++) {

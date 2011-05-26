@@ -47,7 +47,6 @@ public class ByteBuffer extends Buffer {
         System.arraycopy(buffer, offset, newArray, 0, getCapacity());
         offset = 0;
         buffer = newArray;
-        
     }
 
     public void put(byte src) {
