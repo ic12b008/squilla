@@ -98,4 +98,8 @@ public abstract class Commons {
         int mask = ~(0xFFFFFFFF << length);
         return val & mask;
     }
+    
+    public static boolean parseBoolean(String name) {
+        return ((name != null) && name.equalsIgnoreCase("true"));
+    }
 }
