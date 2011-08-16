@@ -16,7 +16,7 @@
 package org.squilla.util;
 
 import java.util.Random;
-import org.squilla.io.FrameBuffer;
+import org.squilla.io.ByteBuffer;
 
 /**
  *
@@ -42,8 +42,8 @@ public abstract class Commons {
         System.out.println();
     }
 
-    public static void printDev(FrameBuffer buffer, boolean resp) {
-        printDev(buffer.getRawArray(), buffer.getOffset(), buffer.getPosition(), resp);
+    public static void printDev(ByteBuffer buffer, boolean resp) {
+        printDev(buffer.array(), buffer.arrayOffset(), buffer.position(), resp);
     }
     
     public static String[] split(String str, char delim) {

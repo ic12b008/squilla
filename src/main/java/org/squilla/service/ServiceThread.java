@@ -40,6 +40,12 @@ public abstract class ServiceThread extends Thread {
         shutdownRequested = true;
     }
     
+    public boolean isActive() {
+        synchronized (activeLock) {
+            return active;
+        }
+    }
+    
     public boolean shutdownAndWait(int timeout) {
         shutdown();
         return waitForShutdown(timeout);
@@ -59,7 +65,15 @@ public abstract class ServiceThread extends Thread {
 
     public final void run() {
         while (!shutdownRequested) {
-            taskLoop();
+            try {
+                taskLoop();
+            } catch (Exception ex) {
+                System.err.println("[ServiceThread] Uncaught exception: " + ex);
+                ex.printStackTrace();
+            } catch (Throwable t) {
+                System.err.println("[ServiceThread] Uncaught error: " + t);
+                t.printStackTrace();
+            }
         }
         
         synchronized (activeLock) {

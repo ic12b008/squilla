@@ -47,6 +47,10 @@ public class BufferedPipe {
         pos = new PipeOutputStream();
     }
     
+    public Object getLockObject() {
+        return pipeLock;
+    }
+    
     public void setTimeout(int timeout) {
         this.timeout = timeout;
     }
@@ -201,6 +205,11 @@ public class BufferedPipe {
             }
         }
         
+        public void close() {
+            // Shutdown, clear buffer, nomore input.
+            shutdown(true, true);
+        }
+        
         private void waitMinIncoming() {
             synchronized (pipeLock) {
                 awaitingSize = 1;
@@ -286,6 +295,11 @@ public class BufferedPipe {
             if (!isEmpty()) {
                 pis.notifyIncoming(true);
             }
+        }
+        
+        public void close() {
+            // Shutdown, buffer remains, nomore output.
+            shutdown(true, false);
         }
         
         private void checkIsShutdownRequested() throws IOException {

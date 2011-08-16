@@ -21,67 +21,105 @@ package org.squilla.io;
  */
 public abstract class Buffer {
 
+    protected static final int NON_MARK = -1;
     private int mark;
     private int position;
     private int limit;
     private int capacity;
 
-    public Buffer(int capacity) {
+    protected Buffer(int mark, int position, int limit, int capacity) {
         this.capacity = capacity;
-        this.limit = capacity;
-        this.mark = 0;
-        this.position = 0;
+        position(position);
+        limit(limit);
+        
     }
 
-    public int getCapacity() {
+    public final int capacity() {
         return capacity;
     }
 
-    public int getPosition() {
+    public final int position() {
         return position;
     }
 
-    public void setPosition(int position) {
-        if (position < mark || position > getLimit()) {
-            throw new IllegalArgumentException("Out of range");
+    public final Buffer position(int newPosition) {
+        if (mark > newPosition) {
+            mark = NON_MARK;
         }
-        this.position = position;
+        if (newPosition > limit) {
+            throw new IllegalArgumentException("Position Out of range");
+        }
+        this.position = newPosition;
+        return this;
     }
 
-    public int getLimit() {
+    public final int limit() {
         return limit;
     }
 
-    public void setLimit(int limit) {
-        if (limit < getPosition() || limit > getCapacity()) {
-            throw new IllegalArgumentException("Out of range");
+    public final Buffer limit(int newLimit) {
+        if (position > newLimit) {
+            position = newLimit;
         }
-        this.limit = limit;
+        if (newLimit > capacity) {
+            throw new IllegalArgumentException("Limit Out of range");
+        }
+        this.limit = newLimit;
+        return this;
     }
 
-    public void skip(int n) {
+    public final Buffer skip(int n) {
         position += n;
+        return this;
     }
 
-    public void mark() {
-        mark = getPosition();
+    public final Buffer mark() {
+        mark = position;
+        return this;
     }
     
-    public void reset() {
-        setPosition(mark);
+    public final Buffer reset() {
+        if (mark == NON_MARK) {
+            throw new InvalidMarkException();
+        }
+        position = mark;
+        return this;
+    }
+    
+    public final Buffer clear() {
+        mark = NON_MARK;
+        position = 0;
+        limit = capacity;
+        return this;
+    }
+    
+    public final Buffer flip() {
+        limit = position;
+        return rewind();
     }
 
-    public void rewind() {
-        mark = 0;
-        setPosition(0);
+    public final Buffer rewind() {
+        position = 0;
+        mark = NON_MARK;
+        return this;
     }
 
-    public int getRemaining() {
-        return getLimit() - getPosition();
+    public final int remaining() {
+        return limit - position;
     }
 
-    public void flip() {
-        setLimit(getPosition());
-        rewind();
+    public final boolean hasRemaining() {
+        return remaining() > 0;
     }
+
+    public abstract boolean isReadOnly();
+    
+//    public abstract boolean hasArray();
+//    
+//    public abstract Object array();
+//    
+//    public abstract int arrayOffset();
+//    
+//    public abstract boolean isDirect();
+    
 }
