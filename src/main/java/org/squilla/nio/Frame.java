@@ -13,12 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.squilla.io;
+package org.squilla.nio;
 
 /**
- *
+ * Common protocol frame interface.
  * @author Shotaro Uchida <fantom@xmaker.mx>
  */
-public class BufferUnderflowException extends RuntimeException {
+public interface Frame {
 
+    /**
+     * Read this entire frame packet.
+     * @param buffer buffer to read entire frame.
+     * @param offset buffer offset.
+     */
+    public void pull(FrameBuffer frameBuffer);
+
+    /**
+     * Quote this total packet byte-size.
+     * @return
+     */
+    public int quote();
+
+    /**
+     * Drain buffer to this frame.
+     * @param frameBuffer
+     */
+    public void drain(FrameBuffer frameBuffer);
 }

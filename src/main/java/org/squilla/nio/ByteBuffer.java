@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.squilla.io;
+package org.squilla.nio;
 
 /**
  *
@@ -160,94 +160,4 @@ public abstract class ByteBuffer extends Buffer {
         this.order = bo;
         return this;
     }
-    
-    public abstract char getChar();
-    
-    public abstract ByteBuffer putChar(char value);
-    
-    public abstract char getChar(int index);
-    
-    public abstract ByteBuffer putChar(int index, char value);
-    
-    //public abstract CharBuffer asCharBuffer();
-    
-    public abstract short getShort();
-    
-    public abstract ByteBuffer putShort(short value);
-    
-    public abstract short getShort(int index);
-    
-    public abstract ByteBuffer putShort(int index, short value);
-    
-    //public abstract ShortBuffer asShortBuffer();
-    
-    public abstract int getInt();
-    
-    public abstract ByteBuffer putInt(int value);
-    
-    public abstract int getInt(int index);
-    
-    public abstract ByteBuffer putInt(int index, int value);
-    
-    //public abstract IntBuffer asIntBuffer();
-
-    public abstract long getLong();
-    
-    public abstract ByteBuffer putLong(long value);
-    
-    public abstract long getLong(int index);
-    
-    public abstract ByteBuffer putLong(int index, long value);
-    
-    //public abstract LongBuffer asLongBuffer();
-    
-    public abstract float getFloat();
-    
-    public abstract ByteBuffer putFloat(float value);
-    
-    public abstract float getFloat(int index);
-    
-    public abstract ByteBuffer putFloat(int index, float value);
-    
-    //public abstract FloatBuffer asFloatBuffer();
-    
-    public abstract double getDouble();
-    
-    public abstract ByteBuffer putDouble(double value);
-    
-    public abstract double getDouble(int index);
-    
-    public abstract ByteBuffer putDouble(int index, double value);
-    
-    //public abstract DoubleBuffer asDoubleBuffer();
-    
-//    public int getOffset() {
-//        return offset;
-//    }
-//
-//    public byte[] getRawArray() {
-//        return buffer;
-//    }
-//    
-//    public void extend(int newSize) {
-//        byte[] newArray = new byte[newSize];
-//        System.arraycopy(buffer, offset, newArray, 0, getCapacity());
-//        offset = 0;
-//        buffer = newArray;
-//    }
-//
-//    public void clean(int length) {
-//        for (int i = 0; i < length; i++) {
-//            put((byte) 0);
-//        }
-//    }
-//    
-//    public byte peek() {
-//        if (getRemaining() < 1) {
-//            throw new BufferUnderflowException();
-//        }
-//        return buffer[offset + getPosition()];
-//    }
-//
-//
 }

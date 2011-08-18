@@ -16,7 +16,8 @@
 package org.squilla.util;
 
 import java.util.Random;
-import org.squilla.io.ByteBuffer;
+import org.squilla.nio.ByteBuffer;
+import org.squilla.nio.ByteUtil;
 
 /**
  *

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.squilla.io;
+package org.squilla.nio;
 
 /**
  *
@@ -29,9 +29,8 @@ public abstract class Buffer {
 
     protected Buffer(int mark, int position, int limit, int capacity) {
         this.capacity = capacity;
-        position(position);
         limit(limit);
-        
+        position(position);
     }
 
     public final int capacity() {

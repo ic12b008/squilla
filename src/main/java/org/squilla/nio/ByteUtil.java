@@ -1,3 +1,5 @@
+package org.squilla.nio;
+
 /*
  * Copyright 2011 Shotaro Uchida <fantom@xmaker.mx>.
  *
@@ -13,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.squilla.util;
 
-import org.squilla.io.ByteOrder;
+
+import org.squilla.nio.ByteOrder;
 
 /**
  *
@@ -158,6 +160,12 @@ public class ByteUtil {
                 }
             }
         }
+        return dest;
+    }
+    
+    public byte[] toByteArray(long src, int size) {
+        byte[] dest = new byte[size];
+        toByteArray(src, size, dest, 0);
         return dest;
     }
 

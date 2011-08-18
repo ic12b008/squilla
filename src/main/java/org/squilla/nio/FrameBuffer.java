@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.squilla.io;
+package org.squilla.nio;
 
-import org.squilla.util.ByteUtil;
 
 /**
  *
@@ -57,6 +56,10 @@ public class FrameBuffer extends ByteBuffer {
     
     public byte get(int index) {
         return array[offset + index];
+    }
+    
+    public byte peek() {
+        return get(checkPosition());
     }
     
     public ByteBuffer put(byte src) {
@@ -102,6 +105,12 @@ public class FrameBuffer extends ByteBuffer {
         return false;
     }
     
+    public void clean(int length) {
+        for (int i = 0; i < length; i++) {
+            put((byte) 0);
+        }
+    }
+    
     public int getOctetInt(int octet) {
         if (remaining() < octet) {
             throw new BufferUnderflowException();
@@ -119,7 +128,9 @@ public class FrameBuffer extends ByteBuffer {
         if (remaining() < octet) {
             throw new BufferOverflowException();
         }
-        return putOctetInt(octet, position(), value);
+        putOctetInt(octet, position(), value);
+        skip(octet);
+        return this;
     }
     
     public FrameBuffer putOctetInt(int octet, int index, int value) {
@@ -130,103 +141,57 @@ public class FrameBuffer extends ByteBuffer {
         return this;
     }
 
-    public char getChar() {
-        return (char) getOctetInt(ByteUtil.INT_16_SIZE);
-    }
-
-    public ByteBuffer putChar(char value) {
-        return putOctetInt(ByteUtil.INT_16_SIZE, value);
-    }
-
-    public char getChar(int index) {
-        return (char) getOctetInt(ByteUtil.INT_16_SIZE, index);
-    }
-
-    public ByteBuffer putChar(int index, char value) {
-        return putOctetInt(ByteUtil.INT_16_SIZE, index, value);
-    }
-
-    public short getShort() {
-        return (short) getOctetInt(ByteUtil.INT_16_SIZE);
-    }
-
-    public ByteBuffer putShort(short value) {
-        return putOctetInt(ByteUtil.INT_16_SIZE, value);
-    }
-
-    public short getShort(int index) {
-        return (short) getOctetInt(ByteUtil.INT_16_SIZE, index);
-    }
-
-    public ByteBuffer putShort(int index, short value) {
-        return putOctetInt(ByteUtil.INT_16_SIZE, index, value);
-    }
-
-    public int getInt() {
-        return getOctetInt(ByteUtil.INT_32_SIZE);
-    }
-
-    public ByteBuffer putInt(int value) {
-        return putOctetInt(ByteUtil.INT_32_SIZE, value);
-    }
-
-    public int getInt(int index) {
-        return getOctetInt(ByteUtil.INT_32_SIZE, index);
-    }
-
-    public ByteBuffer putInt(int index, int value) {
-        return putOctetInt(ByteUtil.INT_32_SIZE, index, value);
-    }
-
-    public long getLong() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public ByteBuffer putLong(long value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public long getLong(int index) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public ByteBuffer putLong(int index, long value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public float getFloat() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public ByteBuffer putFloat(float value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public float getFloat(int index) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public ByteBuffer putFloat(int index, float value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public double getDouble() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public ByteBuffer putDouble(double value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public double getDouble(int index) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public ByteBuffer putDouble(int index, double value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public boolean isReadOnly() {
         return readOnly;
+    }
+    
+    public FrameBuffer putInt8(int i) {
+        return (FrameBuffer) put((byte) (i & 0xFF));
+    }
+
+    public FrameBuffer putInt16(int i) {
+        return putOctetInt(ByteUtil.INT_16_SIZE, i);
+    }
+
+    public FrameBuffer putInt32(int i) {
+        return putOctetInt(ByteUtil.INT_32_SIZE, i);
+    }
+
+    /**
+     * Get single byte.
+     * @deprecated
+     */
+    public byte getByte() {
+        return get();
+    }
+    
+    /**
+     * Get multiple bytes.
+     * @deprecated
+     */
+    public byte[] getBytes(int length) {
+        byte[] dest = new byte[length];
+        get(dest);
+        return dest;
+    }
+    
+    public int getInt8() {
+        return get() & 0xFF;
+    }
+    
+    public int getInt16() {
+        return getOctetInt(ByteUtil.INT_16_SIZE);
+    }
+
+    public int getInt32() {
+        return getOctetInt(ByteUtil.INT_32_SIZE);
+    }
+    
+    public void putInt64(long l) {
+        throw new UnsupportedOperationException();
+    }
+
+    public long getInt64() {
+        throw new UnsupportedOperationException();
     }
 }
