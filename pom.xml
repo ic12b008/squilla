@@ -25,17 +25,6 @@
                 <configuration>
                     <instructions>
                         <Export-Package>org.squilla.i2c,org.squilla.i2c.eeprom,org.squilla.io,org.squilla.nio,org.squilla.service,org.squilla.util</Export-Package>
-                        <Private-Package>org.squilla.i2c.*,org.squilla.io.*,org.squilla.nio.*,org.squilla.service.*,org.squilla.util.*</Private-Package>
-                    </instructions>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Export-Package>org.squilla.i2c,org.squilla.i2c.eeprom,org.squilla.io,org.squilla.service,org.squilla.util</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
