@@ -19,25 +19,27 @@ package org.squilla.service;
  *
  * @author Shotaro Uchida <fantom@xmaker.mx>
  */
-public abstract class ServiceThread extends Thread {
+public abstract class ServiceThread extends Thread implements Service {
 
     private boolean active = false;
     private volatile boolean shutdownRequested;
     private final Object activeLock = new Object();
 
-    public void activate() {
+    public boolean activate() {
         synchronized (activeLock) {
             if (active) {
-                return;
+                return false;
             }
             active = true;
             shutdownRequested = false;
         }
         this.start();
+        return true;
     }
 
-    public void shutdown() {
+    public boolean shutdown() {
         shutdownRequested = true;
+        return true;
     }
     
     public boolean isActive() {

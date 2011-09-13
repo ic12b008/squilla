@@ -23,7 +23,6 @@ public class FrameBuffer extends ByteBuffer {
 
     public static final int BO_LITTLE_ENDIAN = 0;
     public static final int BO_BIG_ENDIAN = 1;
-
     private int byteOrder;
 
     public FrameBuffer(byte[] buffer, int offset, int length) {
@@ -73,11 +72,11 @@ public class FrameBuffer extends ByteBuffer {
     public int getInt8() {
         return get() & 0xFF;
     }
-    
+
     public byte getByte() {
         return get();
     }
-    
+
     public int getInt16() {
         int s = 0;
         if (byteOrder == BO_LITTLE_ENDIAN) {
@@ -109,7 +108,7 @@ public class FrameBuffer extends ByteBuffer {
         }
         return s;
     }
-    
+
     public void putInt64(long l) {
         if (byteOrder == BO_LITTLE_ENDIAN) {
             put(ByteUtil.LITTLE_ENDIAN.toByteArray(l));
@@ -129,7 +128,16 @@ public class FrameBuffer extends ByteBuffer {
 
     public byte[] getBytes(int length) {
         byte[] b = new byte[length];
-        get(b);
+        if (byteOrder == BO_LITTLE_ENDIAN) {
+            if (getRemaining() < length) {
+                throw new BufferUnderflowException();
+            }
+            for (int i = length - 1; i >= 0; i--) {
+                b[i] = get();
+            }
+        } else {
+            get(b);
+        }
         return b;
     }
 }
