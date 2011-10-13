@@ -32,15 +32,16 @@ public abstract class Commons {
     }
 
     public static void printDev(byte[] buffer, int off, int len, boolean resp) {
+        StringBuffer sb = new StringBuffer();
         if (resp) {
-            System.out.print(">>(" + len + ") ");
+            sb.append(">>(" + len + ") ");
         } else {
-            System.out.print("<<(" + len + ") ");
+            sb.append("<<(" + len + ") ");
         }
         for (int i = off; i < off + len; i++) {
-            System.out.print(ByteUtil.toHexString(buffer[i]) + " ");
+            sb.append(ByteUtil.toHexString(buffer[i]) + " ");
         }
-        System.out.println();
+        System.out.println(sb.toString());
     }
 
     public static void printDev(ByteBuffer buffer, boolean resp) {

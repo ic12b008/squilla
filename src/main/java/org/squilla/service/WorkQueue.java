@@ -78,6 +78,7 @@ public class WorkQueue implements Service {
             try {
                 r.run();
             } catch (Throwable t) {
+                t.printStackTrace();
                 System.out.println("[PoolWorker] Uncaught Exception!");
             }
         }

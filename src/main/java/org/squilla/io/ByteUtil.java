@@ -63,6 +63,10 @@ public class ByteUtil {
             return hex.substring(len - 2);
         }
     }
+    
+    public static String toHexString(short s) {
+        return toHexString((byte) (s >> 8)) + toHexString((byte) s);
+    }
 
     public static String toHexString(byte[] data, int offset, int length) {
         String s = "";
@@ -166,15 +170,15 @@ public class ByteUtil {
         return dest;
     }
     
-    public byte[] toByteArray(long src) {
-        byte[] dest = new byte[INT_64_SIZE];
+    public byte[] toByteArray(long src, int size) {
+        byte[] dest = new byte[size];
         if (byteOrder == BO_LE) {
-            for (int p = 0; p < INT_64_SIZE; p++) {
-                dest[p] = (byte) ((src >> (BYTE_SIZE * p)) & 0xff);
+            for (int p = 0; p < size; p++) {
+                dest[p] = (byte) ((src >> (BYTE_SIZE * p)) & 0xffL);
             }
         } else {
-            for (int p = 0; p < INT_64_SIZE; p++) {
-                dest[p] = (byte) ((src >> (BYTE_SIZE * (INT_64_SIZE - 1 - p))) & 0xff);
+            for (int p = 0; p < size; p++) {
+                dest[p] = (byte) ((src >> (BYTE_SIZE * (size - 1 - p))) & 0xffL);
             } 
         }
         return dest;

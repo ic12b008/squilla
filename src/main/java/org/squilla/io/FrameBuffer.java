@@ -21,16 +21,28 @@ package org.squilla.io;
  */
 public class FrameBuffer extends ByteBuffer {
 
+    public static final byte TRUE = 0x01;
+    public static final byte FALSE = 0x00;
     public static final int BO_LITTLE_ENDIAN = 0;
     public static final int BO_BIG_ENDIAN = 1;
     private int byteOrder;
 
     public FrameBuffer(byte[] buffer, int offset, int length) {
+        this(BO_LITTLE_ENDIAN, buffer, offset, length);
+    }
+    
+    public FrameBuffer(int byteOrder, byte[] buffer, int offset, int length) {
         super(buffer, offset, length);
+        this.byteOrder = byteOrder;
     }
 
     public FrameBuffer(byte[] buffer) {
+        this(BO_LITTLE_ENDIAN, buffer);
+    }
+    
+    public FrameBuffer(int byteOrder,byte[] buffer) {
         super(buffer);
+        this.byteOrder = byteOrder;
     }
 
     public int getByteOrder() {
@@ -67,6 +79,10 @@ public class FrameBuffer extends ByteBuffer {
             put((byte) ((i >> 8) & 0xFF));
             put((byte) (i & 0xFF));
         }
+    }
+    
+    public void putBoolean(boolean b) {
+        put(b ? TRUE : FALSE);
     }
 
     public int getInt8() {
@@ -111,19 +127,19 @@ public class FrameBuffer extends ByteBuffer {
 
     public void putInt64(long l) {
         if (byteOrder == BO_LITTLE_ENDIAN) {
-            put(ByteUtil.LITTLE_ENDIAN.toByteArray(l));
+            put(ByteUtil.LITTLE_ENDIAN.toByteArray(l, ByteUtil.INT_64_SIZE));
         } else {
-            put(ByteUtil.BIG_ENDIAN.toByteArray(l));
+            put(ByteUtil.BIG_ENDIAN.toByteArray(l, ByteUtil.INT_64_SIZE));
         }
     }
 
     public long getInt64() {
         byte[] b = getBytes(ByteUtil.INT_64_SIZE);
-        if (byteOrder == BO_LITTLE_ENDIAN) {
-            return ByteUtil.LITTLE_ENDIAN.toInt64(b, 0);
-        } else {
-            return ByteUtil.BIG_ENDIAN.toInt64(b, 0);
-        }
+        return ByteUtil.BIG_ENDIAN.toInt64(b, 0);
+    }
+    
+    public boolean getBoolean() {
+        return (get() == TRUE);
     }
 
     public byte[] getBytes(int length) {

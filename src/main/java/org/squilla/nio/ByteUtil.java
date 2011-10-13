@@ -16,9 +16,6 @@ package org.squilla.nio;
  * limitations under the License.
  */
 
-
-import org.squilla.nio.ByteOrder;
-
 /**
  *
  * @author Shotaro Uchida <fantom@xmaker.mx>
