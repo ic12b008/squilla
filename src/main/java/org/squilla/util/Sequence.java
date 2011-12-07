@@ -1,11 +1,11 @@
 /*
- * Copyright 2011 Shotaro Uchida <fantom@xmaker.mx>.
+ * Copyright 2011 Shotaro Uchida <fantom@xmaker.mx>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,15 +19,25 @@ package org.squilla.util;
  *
  * @author Shotaro Uchida <fantom@xmaker.mx>
  */
-public interface Latch {
+public class Sequence {
     
-    public boolean isAwaiting();
+    private int sequence = 0;
+    private final int mask;
     
-    public Object await();
+    public Sequence(int bits) {
+        if (bits < 1) {
+            throw new IllegalArgumentException();
+        }
+        int m = 0x01;
+        for (int i = 0; i < (bits - 1); i++) {
+            m |= (m << 1);
+        }
+        mask = m;
+    }
     
-    public Object await(int timeout);
-    
-    public Object get();
-    
-    public boolean set(Object obj);
+    public synchronized int nextSequence() {
+        int next = sequence;
+        sequence = (sequence + 1) & mask;
+        return next;
+    }
 }

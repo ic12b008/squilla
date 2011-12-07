@@ -76,6 +76,38 @@ public class ByteUtil {
         return s;
     }
     
+    public static String toString(byte[] buffer, int off, int len) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = off; i < off + len; i++) {
+            sb.append(ByteUtil.toHexString(buffer[i]) + " ");
+        }
+        return sb.toString();
+    }
+    
+    public static String toString(byte[] buffer, int off, int len, boolean resp) {
+        if (resp) {
+            return ">>(" + len + ") " + toString(buffer, off, len);
+        } else {
+            return "<<(" + len + ") " + toString(buffer, off, len);
+        }
+    }
+    
+    public long toInt(byte[] src, int off, int len) {
+        long dest = 0;
+        if (byteOrder == BO_LE) {
+            for (int p = 0; p < len; p++) {
+                long d = src[off + p] & 0xff;
+                dest |= (d << (BYTE_SIZE * p));
+            }
+        } else {
+            for (int p = 0; p < len; p++) {
+                long d = src[off + p] & 0xff;
+                dest |= (d << (BYTE_SIZE * (len - 1 - p)));
+            } 
+        }
+        return dest;
+    }
+    
     public long toInt64(byte[] src, int off) {
         long dest = 0;
         if (byteOrder == BO_LE) {

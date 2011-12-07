@@ -33,6 +33,10 @@ public class ByteBuffer extends Buffer {
     public ByteBuffer(byte[] buffer) {
         this(buffer, 0, buffer.length);
     }
+    
+    public String toString() {
+        return ByteUtil.toString(buffer, offset, getPosition());
+    }
 
     public int getOffset() {
         return offset;
@@ -100,5 +104,11 @@ public class ByteBuffer extends Buffer {
         }
         System.arraycopy(buffer, offset + getPosition(), dst, dstOff, dstLen);
         skip(dstLen);
+    }
+    
+    public byte[] getByteArray(int octets) {
+        byte[] dst = new byte[octets];
+        get(dst);
+        return dst;
     }
 }

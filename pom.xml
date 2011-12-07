@@ -4,13 +4,14 @@
 
     <groupId>org.squilla</groupId>
     <artifactId>squilla-commons</artifactId>
-    <version>0.1.4</version>
+    <version>0.1.5</version>
     <packaging>bundle</packaging>
 
     <name>squilla-commons OSGi Bundle</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <netbeans.hint.license>apache20</netbeans.hint.license>
     </properties>
 
     <dependencies></dependencies>

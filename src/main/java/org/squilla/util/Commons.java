@@ -15,9 +15,9 @@
  */
 package org.squilla.util;
 
+import java.math.BigInteger;
 import java.util.Random;
-import org.squilla.nio.ByteBuffer;
-import org.squilla.nio.ByteUtil;
+import org.squilla.io.ByteUtil;
 
 /**
  *
@@ -30,22 +30,9 @@ public abstract class Commons {
         i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
         return ((i + (i >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
     }
-
+    
     public static void printDev(byte[] buffer, int off, int len, boolean resp) {
-        StringBuffer sb = new StringBuffer();
-        if (resp) {
-            sb.append(">>(" + len + ") ");
-        } else {
-            sb.append("<<(" + len + ") ");
-        }
-        for (int i = off; i < off + len; i++) {
-            sb.append(ByteUtil.toHexString(buffer[i]) + " ");
-        }
-        System.out.println(sb.toString());
-    }
-
-    public static void printDev(ByteBuffer buffer, boolean resp) {
-        printDev(buffer.array(), buffer.arrayOffset(), buffer.position(), resp);
+        System.out.println(ByteUtil.toString(buffer, off, len, resp));
     }
     
     public static String[] split(String str, char delim) {
@@ -77,6 +64,16 @@ public abstract class Commons {
 
         return sa;
     }
+    
+    public static String replace(String target, String oldString, String newString) {
+        int i = target.indexOf(oldString);
+        if (i == -1) {
+            return target;
+        }
+        String pre = target.substring(0, i);
+        String suf = target.substring(i + oldString.length());
+        return pre + newString + suf;
+    }
 
     public static int[] randArray(int n) {
         Random rand = new Random();
@@ -103,5 +100,45 @@ public abstract class Commons {
     
     public static boolean parseBoolean(String name) {
         return ((name != null) && name.equalsIgnoreCase("true"));
+    }
+    
+    public static byte parseByte(String s) {
+        if (s.startsWith("0x")) {
+            return Byte.parseByte(s.substring(2), 16);
+        } else {
+            return Byte.parseByte(s);
+        }
+    }
+    
+    public static short parseShort(String s) {
+        if (s.startsWith("0x")) {
+            return Short.parseShort(s.substring(2), 16);
+        } else {
+            return Short.parseShort(s);
+        }
+    }
+    
+    public static int parseInt(String s) {
+        if (s.startsWith("0x")) {
+            return Integer.parseInt(s.substring(2), 16);
+        } else {
+            return Integer.parseInt(s);
+        }
+    }
+    
+    public static long parseLong(String s) {
+        if (s.startsWith("0x")) {
+            return Long.parseLong(s.substring(2), 16);
+        } else {
+            return Long.parseLong(s);
+        }
+    }
+    
+    public static long parseInt64(String s) {
+        if (s.startsWith("0x")) {
+            return new BigInteger(s.substring(2), 16).longValue();
+        } else {
+            return new BigInteger(s).longValue();
+        }
     }
 }

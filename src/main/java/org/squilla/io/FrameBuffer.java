@@ -134,26 +134,16 @@ public class FrameBuffer extends ByteBuffer {
     }
 
     public long getInt64() {
-        byte[] b = getBytes(ByteUtil.INT_64_SIZE);
-        return ByteUtil.BIG_ENDIAN.toInt64(b, 0);
+        byte[] b = new byte[ByteUtil.INT_64_SIZE];
+        get(b);
+        if (byteOrder == BO_LITTLE_ENDIAN) {
+            return ByteUtil.LITTLE_ENDIAN.toInt64(b, 0);
+        } else {
+            return ByteUtil.BIG_ENDIAN.toInt64(b, 0);
+        }
     }
     
     public boolean getBoolean() {
         return (get() == TRUE);
-    }
-
-    public byte[] getBytes(int length) {
-        byte[] b = new byte[length];
-        if (byteOrder == BO_LITTLE_ENDIAN) {
-            if (getRemaining() < length) {
-                throw new BufferUnderflowException();
-            }
-            for (int i = length - 1; i >= 0; i--) {
-                b[i] = get();
-            }
-        } else {
-            get(b);
-        }
-        return b;
     }
 }
