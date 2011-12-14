@@ -30,4 +30,6 @@ public interface Latch {
     public Object get();
     
     public boolean set(Object obj);
+    
+    public boolean abort();
 }

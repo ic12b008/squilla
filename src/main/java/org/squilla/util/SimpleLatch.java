@@ -33,6 +33,9 @@ public class SimpleLatch implements Latch {
     }
 
     public synchronized Object await(int timeout) {
+        if (awaiting) {
+            throw new IllegalStateException("Someone is awaiting this latch.");
+        }
         while (obj == null) {
             awaiting = true;
             try {
@@ -63,7 +66,15 @@ public class SimpleLatch implements Latch {
             throw new NullPointerException();
         }
         obj = e;
-        notifyAll();
+        notify();
         return true;
+    }
+    
+    public synchronized boolean abort() {
+        if (awaiting) {
+            notify();
+            return true;
+        }
+        return false;
     }
 }
