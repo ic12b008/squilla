@@ -25,18 +25,20 @@ import org.squilla.util.ArrayFifoQueue;
 public class WorkQueue implements Service {
 
     private final int poolSize;
+    private final int queueSize;
     private final PoolWorker[] threads;
     private final ArrayFifoQueue queue;
     private boolean active = false;
 
-    public WorkQueue(int poolSize) {
+    public WorkQueue(int poolSize, int queueSize) {
         this.poolSize = poolSize;
-        queue = new ArrayFifoQueue(poolSize);
+        this.queueSize = queueSize;
+        queue = new ArrayFifoQueue(queueSize);
         threads = new PoolWorker[poolSize];
     }
     
     public int getQueueSize() {
-        return poolSize;
+        return queueSize;
     }
     
     public int remainingTask() {

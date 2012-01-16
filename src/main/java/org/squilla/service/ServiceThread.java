@@ -24,6 +24,13 @@ public abstract class ServiceThread extends Thread implements Service {
     private boolean active = false;
     private volatile boolean shutdownRequested;
     private final Object activeLock = new Object();
+    
+    public ServiceThread(String name) {
+        super(name);
+    }
+    
+    public ServiceThread() {
+    }
 
     public boolean activate() {
         synchronized (activeLock) {
