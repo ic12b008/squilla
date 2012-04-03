@@ -63,7 +63,6 @@ public class WorkQueue implements Service {
         }
         for (int i = 0; i < poolSize; i++) {
             threads[i].shutdown();
-            threads[i].interrupt();
         }
         active = false;
         return true;
@@ -73,7 +72,7 @@ public class WorkQueue implements Service {
         queue.enqueue(r);
     }
 
-    private class PoolWorker extends ServiceThread {
+    private class PoolWorker extends ServiceTask {
 
         protected void taskLoop() {
             Runnable r = (Runnable) queue.blockingDequeue();

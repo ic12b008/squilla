@@ -17,6 +17,7 @@ package org.squilla.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
 /**
@@ -123,7 +124,7 @@ public class BufferedPipe {
          * @return
          * @throws IOException 
          */
-        public int read() {
+        public int read() throws IOException {
             if (isEmpty()) {
                 if (isShutdown()) {
                     return -1;
@@ -143,11 +144,11 @@ public class BufferedPipe {
             return b & 0xFF;
         }
 
-        public int read(byte[] b) {
+        public int read(byte[] b) throws IOException {
             return read(b, 0, b.length);
         }
 
-        public int read(byte[] b, int off, int length) {
+        public int read(byte[] b, int off, int length) throws IOException {
             if (b == null) {
                 throw new NullPointerException("Null array");
             }
@@ -210,24 +211,26 @@ public class BufferedPipe {
             shutdown(true, true);
         }
         
-        private void waitMinIncoming() {
+        private void waitMinIncoming() throws InterruptedIOException {
             synchronized (pipeLock) {
                 awaitingSize = 1;
                 while (available() == 0 && !shutdown) {
                     try {
                         pipeLock.wait();
                     } catch (InterruptedException ex) {
+                        throw new InterruptedIOException("Interrupted while awaiting a byte.");
                     }
                 }
             }
         }
 
-        private void waitIncoming(int length) {
+        private void waitIncoming(int length) throws InterruptedIOException {
             synchronized (pipeLock) {
                 awaitingSize = length;
                 try {
                     pipeLock.wait(timeout);
                 } catch (InterruptedException ex) {
+                    throw new InterruptedIOException("Interrupted while awaiting " + length + " bytes.");
                 }
             }
         }

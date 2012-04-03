@@ -17,60 +17,52 @@ package org.squilla.service;
 
 /**
  *
- * @deprecated 
  * @author Shotaro Uchida <fantom@xmaker.mx>
  */
-public abstract class ServiceThread extends Thread implements Service {
+public abstract class ServiceTask implements Service, Runnable {
 
-    private boolean active = false;
-    private volatile boolean shutdownRequested;
-    private final Object activeLock = new Object();
+    private volatile boolean shutdownRequested = false;
+    private volatile Thread context = null;
+    private final String contextName;
+    private int contextPriority = -1;
     
-    public ServiceThread(String name) {
-        super(name);
+    public ServiceTask(String name, int priority) {
+        this.contextName = name;
+        this.contextPriority = priority;
     }
     
-    public ServiceThread() {
+    public ServiceTask(String name) {
+        this(null, Thread.NORM_PRIORITY);
+    }
+    
+    public ServiceTask() {
+        this(null);
+    }
+    
+    protected Thread getContext() {
+        return context;
     }
 
     public boolean activate() {
-        synchronized (activeLock) {
-            if (active) {
-                return false;
-            }
-            active = true;
-            shutdownRequested = false;
+        if (context != null) {
+            return false;
         }
-        this.start();
+        if (contextName != null) {
+            context = new Thread(this, contextName);
+        } else {
+            context = new Thread(this);
+        }
+        if (contextPriority != -1) {
+            context.setPriority(contextPriority);
+        }
+        context.start();
         return true;
     }
 
     public boolean shutdown() {
         shutdownRequested = true;
+        context.interrupt();
         return true;
-    }
-    
-    public boolean isActive() {
-        synchronized (activeLock) {
-            return active;
-        }
-    }
-    
-    public boolean shutdownAndWait(int timeout) {
-        shutdown();
-        return waitForShutdown(timeout);
-    }
-
-    public boolean waitForShutdown(int timeout) {
-        synchronized (activeLock) {
-            if (active) {
-                try {
-                    activeLock.wait(timeout);
-                } catch (InterruptedException ex) {
-                }
-            }
-            return !active;
-        }
     }
 
     public final void run() {
@@ -84,11 +76,6 @@ public abstract class ServiceThread extends Thread implements Service {
                 System.err.println("[ServiceThread] Uncaught error: " + t);
                 t.printStackTrace();
             }
-        }
-        
-        synchronized (activeLock) {
-            active = false;
-            activeLock.notifyAll();
         }
     }
 
