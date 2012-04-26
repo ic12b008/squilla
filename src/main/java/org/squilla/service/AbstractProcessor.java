@@ -1,20 +1,18 @@
 /*
- *  Copyright 2011 Shotaro Uchida <fantom@xmaker.mx>.
+ * Copyright 2012 Shotaro Uchida <suchida@valleycampus.com>.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.squilla.service;
 
 import java.util.ArrayList;
@@ -28,15 +26,15 @@ import org.squilla.util.BlockingFifoQueue;
  */
 public abstract class AbstractProcessor implements Processor {
 
-    private static final Object SHUTDOWN = new Object();
     private BlockingFifoQueue queue;
-    private ServiceThread processThread = null;
+    private ServiceTask processTask = null;
     private List listenerList;
     private boolean nonBlockingFire;
 
     public AbstractProcessor(int queueSize) {
         queue = new ArrayFifoQueue(queueSize);
         listenerList = new ArrayList();
+        processTask = new ProcessTask();
     }
 
     public void process(Object o) {
@@ -48,27 +46,11 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     public synchronized boolean activate() {
-        if (processThread != null) {
-            return false;
-        }
-
-        processThread = new ProcessThread();
-        processThread.activate();
-        return true;
+        return processTask.activate();
     }
     
     public synchronized boolean shutdown() {
-        if (processThread == null) {
-            return true;
-        }
-        processThread.shutdown();
-        queue.blockingEnqueue(SHUTDOWN);
-        if (!processThread.waitForShutdown(0)) {
-            throw new IllegalThreadStateException("Can't shutdown");
-        }
-        queue.drainAll();
-        processThread = null;
-        return true;
+        return processTask.shutdown();
     }
 
     protected abstract Object processNext(Object o) throws Exception;
@@ -123,11 +105,11 @@ public abstract class AbstractProcessor implements Processor {
         this.nonBlockingFire = nonBlockingFire;
     }
 
-    private class ProcessThread extends ServiceThread {
+    private class ProcessTask extends ServiceTask {
 
         public void taskLoop() {
             Object o = queue.blockingDequeue();
-            if (o == SHUTDOWN) {
+            if (o == null) {
                 return;
             }
             try {

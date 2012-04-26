@@ -41,47 +41,54 @@ public abstract class Buffer {
         return position;
     }
 
-    public void setPosition(int position) {
+    public Buffer setPosition(int position) {
         if (position < mark || position > getLimit()) {
             throw new IllegalArgumentException("Out of range");
         }
         this.position = position;
+        return this;
     }
 
     public int getLimit() {
         return limit;
     }
 
-    public void setLimit(int limit) {
+    public Buffer setLimit(int limit) {
         if (limit < getPosition() || limit > getCapacity()) {
             throw new IllegalArgumentException("Out of range");
         }
         this.limit = limit;
+        return this;
     }
 
-    public void skip(int n) {
+    public Buffer skip(int n) {
         position += n;
+        return this;
     }
 
-    public void mark() {
+    public Buffer mark() {
         mark = getPosition();
+        return this;
     }
     
-    public void reset() {
+    public Buffer reset() {
         setPosition(mark);
+        return this;
     }
 
-    public void rewind() {
+    public Buffer rewind() {
         mark = 0;
         setPosition(0);
+        return this;
     }
 
     public int getRemaining() {
         return getLimit() - getPosition();
     }
 
-    public void flip() {
+    public Buffer flip() {
         setLimit(getPosition());
         rewind();
+        return this;
     }
 }

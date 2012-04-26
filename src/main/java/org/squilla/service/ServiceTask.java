@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Shotaro Uchida <fantom@xmaker.mx>.
+ * Copyright 2012 Shotaro Uchida <suchida@valleycampus.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

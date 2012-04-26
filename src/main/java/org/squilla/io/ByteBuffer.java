@@ -46,32 +46,37 @@ public class ByteBuffer extends Buffer {
         return buffer;
     }
     
-    public void extend(int newSize) {
+    public ByteBuffer extend(int newSize) {
         byte[] newArray = new byte[newSize];
         System.arraycopy(buffer, offset, newArray, 0, getCapacity());
         offset = 0;
         buffer = newArray;
+        return this;
     }
 
-    public void put(byte src) {
+    public ByteBuffer put(byte src) {
         buffer[offset + getPosition()] = src;
         skip(1);
+        return this;
     }
 
-    public void put(byte[] src) {
+    public ByteBuffer put(byte[] src) {
         System.arraycopy(src, offset, buffer, offset + getPosition(), src.length);
         skip(src.length);
+        return this;
     }
 
-    public void put(byte[] src, int srcOff, int srcLen) {
+    public ByteBuffer put(byte[] src, int srcOff, int srcLen) {
         System.arraycopy(src, srcOff, buffer, offset + getPosition(), srcLen);
         skip(srcLen);
+        return this;
     }
 
-    public void clean(int length) {
+    public ByteBuffer clean(int length) {
         for (int i = 0; i < length; i++) {
             put((byte) 0);
         }
+        return this;
     }
     
     public byte peek() {
@@ -90,20 +95,22 @@ public class ByteBuffer extends Buffer {
         return b;
     }
 
-    public void get(byte[] dst) {
+    public ByteBuffer get(byte[] dst) {
         if (getRemaining() < dst.length) {
             throw new BufferUnderflowException();
         }
         System.arraycopy(buffer, offset + getPosition(), dst, 0, dst.length);
         skip(dst.length);
+        return this;
     }
 
-    public void get(byte[] dst, int dstOff, int dstLen) {
+    public ByteBuffer get(byte[] dst, int dstOff, int dstLen) {
         if (getRemaining() < dstLen) {
             throw new BufferUnderflowException();
         }
         System.arraycopy(buffer, offset + getPosition(), dst, dstOff, dstLen);
         skip(dstLen);
+        return this;
     }
     
     public byte[] getByteArray(int octets) {

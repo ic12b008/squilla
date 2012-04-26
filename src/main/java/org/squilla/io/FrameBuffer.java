@@ -49,15 +49,17 @@ public class FrameBuffer extends ByteBuffer {
         return byteOrder;
     }
 
-    public void setByteOrder(int byteOrder) {
+    public FrameBuffer setByteOrder(int byteOrder) {
         this.byteOrder = byteOrder;
+        return this;
     }
 
-    public void putInt8(int i) {
+    public FrameBuffer putInt8(int i) {
         put((byte) (i & 0xFF));
+        return this;
     }
 
-    public void putInt16(int i) {
+    public FrameBuffer putInt16(int i) {
         if (byteOrder == BO_LITTLE_ENDIAN) {
             put((byte) (i & 0xFF));
             put((byte) ((i >> 8) & 0xFF));
@@ -65,9 +67,10 @@ public class FrameBuffer extends ByteBuffer {
             put((byte) ((i >> 8) & 0xFF));
             put((byte) (i & 0xFF));
         }
+        return this;
     }
 
-    public void putInt32(int i) {
+    public FrameBuffer putInt32(int i) {
         if (byteOrder == BO_LITTLE_ENDIAN) {
             put((byte) (i & 0xFF));
             put((byte) ((i >> 8) & 0xFF));
@@ -79,10 +82,28 @@ public class FrameBuffer extends ByteBuffer {
             put((byte) ((i >> 8) & 0xFF));
             put((byte) (i & 0xFF));
         }
+        return this;
     }
     
-    public void putBoolean(boolean b) {
+    public FrameBuffer putBoolean(boolean b) {
         put(b ? TRUE : FALSE);
+        return this;
+    }
+    
+    public FrameBuffer putInt(byte[] src, int srcOff, int srcLen) {
+        if (byteOrder == BO_LITTLE_ENDIAN) {
+            for (int i = (srcOff + srcLen) - 1; i >= 0; i--) {
+                super.put(src[i]);
+            }
+        } else {
+            super.put(src, srcOff, srcLen);
+        }
+        return this;
+    }
+    
+    public FrameBuffer putBinary(byte[] src, int srcOff, int srcLen) {
+        super.put(src, srcOff, srcLen);
+        return this;
     }
 
     public int getInt8() {
@@ -125,12 +146,13 @@ public class FrameBuffer extends ByteBuffer {
         return s;
     }
 
-    public void putInt64(long l) {
+    public FrameBuffer putInt64(long l) {
         if (byteOrder == BO_LITTLE_ENDIAN) {
             put(ByteUtil.LITTLE_ENDIAN.toByteArray(l, ByteUtil.INT_64_SIZE));
         } else {
             put(ByteUtil.BIG_ENDIAN.toByteArray(l, ByteUtil.INT_64_SIZE));
         }
+        return this;
     }
 
     public long getInt64() {
@@ -145,5 +167,31 @@ public class FrameBuffer extends ByteBuffer {
     
     public boolean getBoolean() {
         return (get() == TRUE);
+    }
+    
+    public FrameBuffer getInt(byte[] dst, int dstOff, int dstLen) {
+        if (byteOrder == BO_LITTLE_ENDIAN) {
+            for (int i = (dstOff + dstLen) - 1; i >= 0; i--) {
+                dst[i] = super.get();
+            }
+        } else {
+            super.get(dst, dstOff, dstLen);
+        }
+        return this;
+    }
+    
+    public FrameBuffer getBinary(byte[] dst, int dstOff, int dstLen) {
+        super.get(dst, dstOff, dstLen);
+        return this;
+    }
+    
+    public byte[] getIntAsByteArray(int octets) {
+        byte[] dst = new byte[octets];
+        getInt(dst, 0, octets);
+        return dst;
+    }
+    
+    public byte[] getBinaryAsByteArray(int octets) {
+        return super.getByteArray(octets);
     }
 }
